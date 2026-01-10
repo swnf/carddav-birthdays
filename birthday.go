@@ -35,7 +35,7 @@ func parseBirthdayVCard(vcard string) *Birthday {
 			uid = strings.TrimPrefix(line, "UID:")
 		}
 
-		// Parse BDAY (Birthday) - handle both BDAY: and BDAY;VALUE=date: formats
+		// Parse BDAY (Birthday) - handle BDAY:, BDAY;VALUE=date:, and BDAY;X-APPLE-OMIT-YEAR=1604: formats
 		if strings.HasPrefix(line, "BDAY") {
 			var bdayStr string
 
@@ -44,6 +44,11 @@ func parseBirthdayVCard(vcard string) *Birthday {
 				parts := strings.Split(line, ";VALUE=date:")
 				if len(parts) == 2 {
 					bdayStr = parts[1]
+				}
+			} else if strings.Contains(line, ";X-APPLE-OMIT-YEAR=1604:") {
+				parts := strings.Split(line, ";X-APPLE-OMIT-YEAR=1604:")
+				if len(parts) == 2 {
+					bdayStr = strings.Replace(parts[1], "1604", "0000", 1)
 				}
 			} else if strings.HasPrefix(line, "BDAY:") {
 				// Handle simple BDAY: format
@@ -57,7 +62,8 @@ func parseBirthdayVCard(vcard string) *Birthday {
 				}
 
 				// Try different date formats
-				formats := []string{"20060102", "2006-01-02", "2006/01/02"}
+				// --0415 is valid if there is no year
+				formats := []string{"20060102", "2006-01-02", "2006/01/02", "060102", "--0102"}
 				for _, format := range formats {
 					if date, err := time.Parse(format, bdayStr); err == nil {
 						birthdayDate = &date
