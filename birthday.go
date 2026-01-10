@@ -107,7 +107,11 @@ func generateBirthdayIcs(birthdays []Birthday, today date.Date) string {
 	for _, birthday := range birthdays {
 		sb.WriteString("BEGIN:VEVENT\r\n")
 		sb.WriteString("UID:" + fmt.Sprintf("%s-birthday-%d", strings.ReplaceAll(birthday.FullName, " ", ""), birthday.Date.ToStdTime().Year()) + "\r\n")
-		sb.WriteString("DTSTART;VALUE=DATE:" + birthday.Date.ToStdTime().Format("20060102") + "\r\n")
+		if birthday.Date.ToStdTime().Year() == 0 {
+			sb.WriteString("DTSTART;VALUE=DATE:1900" + birthday.Date.ToStdTime().Format("0102") + "\r\n")
+		} else {
+			sb.WriteString("DTSTART;VALUE=DATE:" + birthday.Date.ToStdTime().Format("20060102") + "\r\n")
+		}
 		sb.WriteString("RRULE:FREQ=YEARLY\r\n")
 		sb.WriteString("SUMMARY:" + birthday.FullName + "'s Birthday\r\n")
 		sb.WriteString("DESCRIPTION:" + birthday.FullName + " born on " + birthday.Date.String() + "\r\n")
